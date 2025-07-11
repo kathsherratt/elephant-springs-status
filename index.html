@@ -209,7 +209,15 @@
                 }
 
                 // Update status display
-                const cleanStatus = data.status.toString().toUpperCase();
+                let cleanStatus = data.status.toString().toUpperCase();
+                
+                // Handle different response formats
+                if (cleanStatus === 'YES') {
+                    cleanStatus = 'ON';
+                } else if (cleanStatus === 'NO') {
+                    cleanStatus = 'OFF';
+                }
+                
                 statusIndicator.textContent = cleanStatus;
                 
                 if (cleanStatus === 'ON') {
@@ -236,7 +244,7 @@
         }
 
         // Auto-refresh every 30 seconds
-        setInterval(loadData, 60000);
+        setInterval(loadData, 30000);
 
         // Load data when page loads
         loadData();
