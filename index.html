@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elephant Springs</title>
+    <title>Elephant Springs Status</title>
     <style>
         * {
             margin: 0;
@@ -176,7 +176,7 @@
 
     <script>
         // Configuration - Replace these with your actual URLs
-        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/11FesZrAH4wVcm2bVxoPWIXIf2D1urUAChw1VmtwVDxQ/edit?resourcekey=&gid=1260498864#gid=1260498864';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyi1DevtqLo1vG_oXcrC1b5tDR2HBEN1h-9aJkRuukrHVtq3E0AA_kf93DU4o78udtW/exec';
         const FORM_URL = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLScuFNDwn9BsJwlo3SbNnXGzfZuxE2uMY7PLyjaZXzOXV5gCDg/formResponse';
 
         // Set the form link
@@ -192,42 +192,24 @@
                 statusIndicator.className = 'status-indicator loading';
                 errorElement.style.display = 'none';
 
-                const response = await fetch(SHEET_CSV_URL);
+                const response = await fetch(APPS_SCRIPT_URL);
+                
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
+
+                const data = await response.json();
                 
-                const csvText = await response.text();
-                const lines = csvText.split('\n');
-                
-                if (lines.length < 2) {
-                    throw new Error('No data found in the sheet');
+                if (data.error) {
+                    throw new Error(data.error);
                 }
 
-                // Get the last non-empty line (most recent response)
-                let lastLine = '';
-                for (let i = lines.length - 1; i >= 1; i--) {
-                    if (lines[i].trim()) {
-                        lastLine = lines[i];
-                        break;
-                    }
-                }
-
-                if (!lastLine) {
-                    throw new Error('No responses found');
-                }
-
-                // Parse CSV line (simple parsing - assumes no commas in data)
-                const columns = lastLine.split(',');
-                const timestamp = columns[0];
-                const status = columns[1];
-
-                if (!status) {
-                    throw new Error('Invalid data format');
+                if (!data.status) {
+                    throw new Error('No status data found');
                 }
 
                 // Update status display
-                const cleanStatus = status.replace(/"/g, '').trim().toUpperCase();
+                const cleanStatus = data.status.toString().toUpperCase();
                 statusIndicator.textContent = cleanStatus;
                 
                 if (cleanStatus === 'ON') {
@@ -239,8 +221,7 @@
                 }
 
                 // Update timestamp
-                const cleanTimestamp = timestamp.replace(/"/g, '').trim();
-                const date = new Date(cleanTimestamp);
+                const date = new Date(data.timestamp);
                 const formattedDate = date.toLocaleString();
                 timestampElement.textContent = `Last updated: ${formattedDate}`;
 
@@ -255,7 +236,7 @@
         }
 
         // Auto-refresh every 30 seconds
-        setInterval(loadData, 30000);
+        setInterval(loadData, 60000);
 
         // Load data when page loads
         loadData();
