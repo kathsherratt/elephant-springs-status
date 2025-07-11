@@ -167,8 +167,7 @@
         <div id="error-message" class="error" style="display: none;"></div>
 
         <div class="update-form">
-            <p style="margin-bottom: 15px; color: #666;">Update the status?</p>
-            <a href="#" id="form-link" class="form-link" target="_blank">Update Status</a>
+            <a href="#" id="form-link" class="form-link" target="_blank">&#128075; Update status?</a>
         </div>
 
         <button onclick="loadData()" class="refresh-btn">Refresh</button>
@@ -213,16 +212,16 @@
                 
                 // Handle different response formats
                 if (cleanStatus === 'YES') {
-                    cleanStatus = '&#128167; ON';
+                    cleanStatus = 'ON';
                 } else if (cleanStatus === 'NO') {
-                    cleanStatus = '&#128024; OFF';
+                    cleanStatus = 'OFF';
                 }
                 
                 statusIndicator.textContent = cleanStatus;
                 
-                if (cleanStatus === '&#128167; ON') {
+                if (cleanStatus === 'ON') {
                     statusIndicator.className = 'status-indicator status-on';
-                } else if (cleanStatus === '&#128024; OFF') {
+                } else if (cleanStatus === 'OFF') {
                     statusIndicator.className = 'status-indicator status-off';
                 } else {
                     statusIndicator.className = 'status-indicator';
