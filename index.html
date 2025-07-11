@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elephant Springs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .dashboard {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .title {
+            font-size: 2.5em;
+            color: #333;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .status-display {
+            margin: 40px 0;
+        }
+
+        .status-label {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 20px 40px;
+            border-radius: 50px;
+            font-size: 2em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .status-on {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .status-off {
+            background: linear-gradient(45deg, #f44336, #da190b);
+            color: white;
+            box-shadow: 0 4px 20px rgba(244, 67, 54, 0.3);
+        }
+
+        .timestamp {
+            margin-top: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .update-form {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .form-link {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: transform 0.2s ease;
+        }
+
+        .form-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+
+        .error {
+            color: #f44336;
+            background: #ffebee;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .refresh-btn {
+            background: none;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        @media (max-width: 500px) {
+            .dashboard {
+                padding: 30px 20px;
+            }
+            
+            .title {
+                font-size: 2em;
+            }
+            
+            .status-indicator {
+                padding: 15px 30px;
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <h1 class="title">Elephant Springs</h1>
+        
+        <div class="status-display">
+            <div class="status-label">Current Status</div>
+            <div id="status-indicator" class="status-indicator loading">
+                Loading...
+            </div>
+        </div>
+
+        <div id="timestamp" class="timestamp">
+            Last updated: Loading...
+        </div>
+
+        <div id="error-message" class="error" style="display: none;"></div>
+
+        <div class="update-form">
+            <p style="margin-bottom: 15px; color: #666;">Want to update the status?</p>
+            <a href="#" id="form-link" class="form-link" target="_blank">Update Status</a>
+        </div>
+
+        <button onclick="loadData()" class="refresh-btn">Refresh</button>
+    </div>
+
+    <script>
+        // Configuration - Replace these with your actual URLs
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/11FesZrAH4wVcm2bVxoPWIXIf2D1urUAChw1VmtwVDxQ/edit?resourcekey=&gid=1260498864#gid=1260498864';
+        const FORM_URL = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLScuFNDwn9BsJwlo3SbNnXGzfZuxE2uMY7PLyjaZXzOXV5gCDg/formResponse';
+
+        // Set the form link
+        document.getElementById('form-link').href = FORM_URL;
+
+        async function loadData() {
+            const statusIndicator = document.getElementById('status-indicator');
+            const timestampElement = document.getElementById('timestamp');
+            const errorElement = document.getElementById('error-message');
+
+            try {
+                statusIndicator.textContent = 'Loading...';
+                statusIndicator.className = 'status-indicator loading';
+                errorElement.style.display = 'none';
+
+                const response = await fetch(SHEET_CSV_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const csvText = await response.text();
+                const lines = csvText.split('\n');
+                
+                if (lines.length < 2) {
+                    throw new Error('No data found in the sheet');
+                }
+
+                // Get the last non-empty line (most recent response)
+                let lastLine = '';
+                for (let i = lines.length - 1; i >= 1; i--) {
+                    if (lines[i].trim()) {
+                        lastLine = lines[i];
+                        break;
+                    }
+                }
+
+                if (!lastLine) {
+                    throw new Error('No responses found');
+                }
+
+                // Parse CSV line (simple parsing - assumes no commas in data)
+                const columns = lastLine.split(',');
+                const timestamp = columns[0];
+                const status = columns[1];
+
+                if (!status) {
+                    throw new Error('Invalid data format');
+                }
+
+                // Update status display
+                const cleanStatus = status.replace(/"/g, '').trim().toUpperCase();
+                statusIndicator.textContent = cleanStatus;
+                
+                if (cleanStatus === 'ON') {
+                    statusIndicator.className = 'status-indicator status-on';
+                } else if (cleanStatus === 'OFF') {
+                    statusIndicator.className = 'status-indicator status-off';
+                } else {
+                    statusIndicator.className = 'status-indicator';
+                }
+
+                // Update timestamp
+                const cleanTimestamp = timestamp.replace(/"/g, '').trim();
+                const date = new Date(cleanTimestamp);
+                const formattedDate = date.toLocaleString();
+                timestampElement.textContent = `Last updated: ${formattedDate}`;
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                statusIndicator.textContent = 'Error';
+                statusIndicator.className = 'status-indicator';
+                errorElement.textContent = `Error loading data: ${error.message}`;
+                errorElement.style.display = 'block';
+                timestampElement.textContent = 'Last updated: Error';
+            }
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadData, 30000);
+
+        // Load data when page loads
+        loadData();
+    </script>
+</body>
+</html>
