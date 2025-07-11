@@ -229,8 +229,7 @@
                 }
 
                 // Update timestamp
-                const date = new Date(data.timestamp);
-                const formattedDate = date.toLocaleString();
+                const formattedDate = data.timestamp;
                 timestampElement.textContent = `Last updated: ${formattedDate}`;
 
             } catch (error) {
