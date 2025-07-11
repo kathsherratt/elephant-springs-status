@@ -175,7 +175,7 @@
     </div>
 
     <script>
-        // Configuration - Replace these with your actual URLs
+        // Configuration
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyi1DevtqLo1vG_oXcrC1b5tDR2HBEN1h-9aJkRuukrHVtq3E0AA_kf93DU4o78udtW/exec';
         const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScuFNDwn9BsJwlo3SbNnXGzfZuxE2uMY7PLyjaZXzOXV5gCDg/viewform';
 
@@ -228,9 +228,8 @@
                     statusIndicator.className = 'status-indicator';
                 }
 
-                // Update timestamp
-                const date = new Date(data.timestamp);
-                const formattedDate = date.toLocaleString();
+                // Update 
+                const formattedDate = new data.timestamp;
                 timestampElement.textContent = `Last updated: ${formattedDate}`;
 
             } catch (error) {
