@@ -213,24 +213,34 @@
                 
                 // Handle different response formats
                 if (cleanStatus === 'YES') {
-                    cleanStatus = 'ON';
+                    cleanStatus = '&#128167; ON';
                 } else if (cleanStatus === 'NO') {
-                    cleanStatus = 'OFF';
+                    cleanStatus = '&#128024; OFF';
                 }
                 
                 statusIndicator.textContent = cleanStatus;
                 
-                if (cleanStatus === 'ON') {
+                if (cleanStatus === '&#128167; ON') {
                     statusIndicator.className = 'status-indicator status-on';
-                } else if (cleanStatus === 'OFF') {
+                } else if (cleanStatus === '&#128024; OFF') {
                     statusIndicator.className = 'status-indicator status-off';
                 } else {
                     statusIndicator.className = 'status-indicator';
                 }
 
                 // Update timestamp
-                const formattedDate = data.timestamp;
-                timestampElement.textContent = `Last updated: ${formattedDate}`;
+                const date = new Date(data.timestamp);
+                const formattedDate = date.toLocaleDateString('en-GB', { 
+                    weekday: 'long', 
+                    day: 'numeric', 
+                    month: 'long' 
+                });
+                const formattedTime = date.toLocaleTimeString('en-GB', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: false 
+                });
+                timestampElement.textContent = `Last updated: ${formattedDate} at ${formattedTime}`;
 
             } catch (error) {
                 console.error('Error loading data:', error);
